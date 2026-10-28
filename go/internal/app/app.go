@@ -8,6 +8,7 @@ import (
 
 	"github.com/weave-lab/interview-public/go/internal/api"
 	"github.com/weave-lab/interview-public/go/internal/auth"
+	"github.com/weave-lab/interview-public/go/internal/ratelimit"
 	"github.com/weave-lab/interview-public/go/internal/store"
 )
 
@@ -29,7 +30,10 @@ func NewRouter(s *store.Store, opts Options) http.Handler {
 		w.Write([]byte("ok"))
 	})
 
+	limiter := ratelimit.New()
+
 	r.Route("/api", func(r chi.Router) {
+		r.Use(ratelimit.Middleware(limiter))
 		r.Use(auth.RequireAuth)
 
 		r.Post("/auth/token", a.HandleToken)
